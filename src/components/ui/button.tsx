@@ -18,8 +18,8 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm hover:shadow-md",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        neural: "bg-gradient-primary text-primary-foreground hover:shadow-glow transition-all duration-normal border-0 relative overflow-hidden",
-        glass: "bg-gradient-glass backdrop-blur-glass border border-white/20 text-foreground hover:bg-white/10 shadow-glass hover:shadow-neural",
+        neural: "bg-gradient-primary text-primary-foreground hover:shadow-glow transition-all duration-normal border-0 relative overflow-hidden hover:scale-105 active:scale-95",
+        glass: "bg-gradient-glass backdrop-blur-glass border border-white/20 dark:border-primary/30 text-foreground hover:bg-white/10 dark:hover:bg-primary/10 shadow-glass hover:shadow-neural hover:scale-105 active:scale-95 transition-all duration-300",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -49,6 +49,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
+        style={{
+          ...props.style,
+          ...(variant === "neural" && {
+            background: "var(--gradient-primary)",
+            boxShadow: "0 0 20px hsl(var(--primary-glow) / 0.3)",
+          })
+        }}
       />
     )
   }

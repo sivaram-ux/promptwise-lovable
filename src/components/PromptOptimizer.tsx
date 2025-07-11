@@ -227,7 +227,7 @@ export const PromptOptimizer = () => {
 
         <div className="space-y-8">
           {/* Input Section */}
-          <GlassCard>
+          <GlassCard scrollReveal>
             <div className="space-y-6">
               <ModeSelector 
                 selectedMode={selectedMode}
@@ -249,10 +249,15 @@ export const PromptOptimizer = () => {
             {optimizationResult && (
               <motion.div
                 key="optimization-result"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -50, scale: 0.9 }}
+                transition={{ 
+                  duration: 0.6,
+                  type: "spring",
+                  damping: 25,
+                  stiffness: 120
+                }}
                 className="space-y-6"
               >
                 <OptimizedOutput
@@ -268,9 +273,15 @@ export const PromptOptimizer = () => {
                 {/* Explanation */}
                 {explanation && (
                   <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
+                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ 
+                      duration: 0.6,
+                      type: "spring",
+                      damping: 20,
+                      stiffness: 100,
+                      delay: 0.2
+                    }}
                   >
                     <ExplanationDisplay explanation={explanation} />
                   </motion.div>
@@ -279,19 +290,35 @@ export const PromptOptimizer = () => {
                 {/* Deep Research Answers */}
                 {deepResearchAnswers && (
                   <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
+                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ 
+                      duration: 0.6,
+                      type: "spring",
+                      damping: 20,
+                      stiffness: 100,
+                      delay: 0.4
+                    }}
                   >
                     <GlassCard>
-                      <h3 className="text-lg font-semibold text-foreground mb-4">
+                      <motion.h3 
+                        className="text-lg font-semibold text-foreground mb-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.6 }}
+                      >
                         Deep Research Answers
-                      </h3>
-                      <div className="p-4 rounded-lg bg-muted/30 border border-border/30">
+                      </motion.h3>
+                      <motion.div 
+                        className="p-4 rounded-lg bg-muted/30 border border-border/30"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.8 }}
+                      >
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">
                           {deepResearchAnswers}
                         </p>
-                      </div>
+                      </motion.div>
                     </GlassCard>
                   </motion.div>
                 )}
