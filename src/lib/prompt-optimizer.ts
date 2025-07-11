@@ -4,24 +4,31 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, GenerativeModel }
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 
-// Secure API Key Input from environment variables
-const GOOGLE_API_KEY: string | undefined = process.env.GOOGLE_API_KEY;
-const SUPABASE_URL: string | undefined = process.env.SUPABASE_URL;
-const SUPABASE_KEY: string | undefined = process.env.SUPABASE_KEY;
+// Secure API Key Input - Browser environment compatible
+const GOOGLE_API_KEY: string | undefined = import.meta.env.VITE_GOOGLE_API_KEY;
+const SUPABASE_URL: string | undefined = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY: string | undefined = import.meta.env.VITE_SUPABASE_KEY;
 
-// Ensure API keys are available
-if (!GOOGLE_API_KEY) {
-    throw new Error("GOOGLE_API_KEY is not set in environment variables.");
-}
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-    throw new Error("SUPABASE_URL and SUPABASE_KEY must be set in environment variables.");
-}
+// For development/demo purposes, we'll make these optional and provide UI for manual input
+let runtimeApiKey: string | undefined = GOOGLE_API_KEY;
+let runtimeSupabaseUrl: string | undefined = SUPABASE_URL;
+let runtimeSupabaseKey: string | undefined = SUPABASE_KEY;
 
-// Init Google Generative AI model
-const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY);
-// For gemini-2.5-flash, the exact model name might be 'gemini-1.5-flash' or similar.
-// Please verify the exact model identifier from Google AI Studio or API documentation.
-const model: GenerativeModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// Dynamic API key setters for runtime configuration
+export const setApiKeys = (googleApiKey: string, supabaseUrl?: string, supabaseKey?: string) => {
+    runtimeApiKey = googleApiKey;
+    if (supabaseUrl) runtimeSupabaseUrl = supabaseUrl;
+    if (supabaseKey) runtimeSupabaseKey = supabaseKey;
+};
+
+// Initialize Google Generative AI model dynamically
+const getModel = (): GenerativeModel => {
+    if (!runtimeApiKey) {
+        throw new Error("Google API Key is required. Please provide it through the UI or environment variables.");
+    }
+    const genAI = new GoogleGenerativeAI(runtimeApiKey);
+    return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+};
 
 // Safety settings (optional, but good practice)
 const safetySettings = [
@@ -121,6 +128,7 @@ Your task is to transform a raw, basic user query into a fully optimized, detail
 `.trim();
     }
 
+    const model = getModel();
     const messages = [
         { role: "user", parts: [{ text: systemMessageContent }] },
         { role: "user", parts: [{ text: `Optimise this: ${rawPrompt}` }] }
@@ -202,6 +210,7 @@ Return exactly this JSON object structure:
 - Make sure the response is valid JSON and not a markdown code block.
 `.trim();
 
+    const model = getModel();
     const messages = [
         { role: "user", parts: [{ text: "You are a prompt engineer. You need to explain your own work." }] },
         { role: "user", parts: [{ text: explanationRequestContent }] }
@@ -250,6 +259,7 @@ Your task is to transform a raw, basic user query into a fully optimized, detail
 ⚠️ CRITICAL INSTRUCTION: Do NOT output any commentary, apologies, or explanations. Output ONLY the **final refined prompt** as plain text.
 `.trim();
 
+    const model = getModel();
     const messages = [
         { role: "user", parts: [{ text: systemMessageContent }] },
         { role: "user", parts: [{ text: `Optimise this: ${originalPrompt}` }] },
@@ -292,8 +302,13 @@ function extractJsonFromResponse(responseText: string): ExplanationFeedback | nu
     return null;
 }
 
-// Initialize Supabase client
-const supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Initialize Supabase client dynamically
+const getSupabaseClient = (): SupabaseClient => {
+    if (!runtimeSupabaseUrl || !runtimeSupabaseKey) {
+        throw new Error("Supabase URL and Key are required for database operations.");
+    }
+    return createClient(runtimeSupabaseUrl, runtimeSupabaseKey);
+};
 
 /**
  * Logs prompt optimization details to Supabase.
@@ -321,6 +336,7 @@ async function logPromptToSupabase(
     };
 
     try {
+        const supabase = getSupabaseClient();
         const { data: responseData, error } = await supabase.from("optimized_prompts").insert([data]).select();
         if (error) {
             console.error(`❌ Failed to insert prompt: ${error.message}`);
@@ -345,6 +361,7 @@ async function logPromptToSupabase(
  */
 async function saveDeepResearchQuestionsSeparately(promptId: string, questionsAsked: string, answers: string, preferences: string | null = null): Promise<void> {
     try {
+        const supabase = getSupabaseClient();
         const { error } = await supabase.from("deep_research_questions").insert({
             prompt_id: promptId,
             questions_asked: questionsAsked,
@@ -366,6 +383,7 @@ async function saveDeepResearchQuestionsSeparately(promptId: string, questionsAs
  */
 async function saveExplanationSeparately(promptId: string, explanationDict: ExplanationFeedback): Promise<void> {
     try {
+        const supabase = getSupabaseClient();
         const { error } = await supabase.from("prompt_explanations").insert({
             prompt_id: promptId,
             explanation_json: explanationDict,

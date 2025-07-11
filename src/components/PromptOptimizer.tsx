@@ -10,6 +10,7 @@ import { PromptInput } from "./PromptInput";
 import { ModeSelector } from "./ModeSelector";
 import { OptimizedOutput } from "./OptimizedOutput";
 import { ExplanationDisplay } from "./ExplanationDisplay";
+import { ApiKeySetup } from "./ApiKeySetup";
 import { DeepResearchDialog } from "./DeepResearchDialog";
 
 // Optimizer functions
@@ -38,6 +39,8 @@ export const PromptOptimizer = () => {
   const [isExplaining, setIsExplaining] = useState(false);
   const [isDeepResearching, setIsDeepResearching] = useState(false);
   const [showDeepResearchDialog, setShowDeepResearchDialog] = useState(false);
+  const [showApiKeySetup, setShowApiKeySetup] = useState(false);
+  const [apiKeysConfigured, setApiKeysConfigured] = useState(false);
   
   const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
   const [explanation, setExplanation] = useState<ExplanationFeedback | null>(null);
@@ -47,6 +50,12 @@ export const PromptOptimizer = () => {
 
   const handleOptimize = async () => {
     if (!prompt.trim()) return;
+
+    // Check if API keys are configured
+    if (!apiKeysConfigured) {
+      setShowApiKeySetup(true);
+      return;
+    }
 
     setIsOptimizing(true);
     setOptimizationResult(null);
@@ -81,13 +90,24 @@ export const PromptOptimizer = () => {
         description: "Your prompt has been successfully optimized.",
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Optimization error:", error);
-      toast({
-        title: "Optimization Failed",
-        description: "An error occurred while optimizing your prompt. Please try again.",
-        variant: "destructive",
-      });
+      
+      // If the error is related to missing API keys, show setup dialog
+      if (error.message?.includes("API Key") || error.message?.includes("process")) {
+        setShowApiKeySetup(true);
+        toast({
+          title: "API Configuration Required",
+          description: "Please configure your Google AI API key to continue.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Optimization Failed",
+          description: "An error occurred while optimizing your prompt. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsOptimizing(false);
     }
@@ -185,9 +205,17 @@ export const PromptOptimizer = () => {
         description: "Could not process deep research questions. Please try again.",
         variant: "destructive",
       });
-    } finally {
+     } finally {
       setIsDeepResearching(false);
     }
+  };
+
+  const handleApiKeySet = () => {
+    setApiKeysConfigured(true);
+    toast({
+      title: "Configuration Complete!",
+      description: "Your API keys have been configured. You can now optimize prompts.",
+    });
   };
 
   return (
@@ -306,6 +334,13 @@ export const PromptOptimizer = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* API Key Setup Dialog */}
+        <ApiKeySetup
+          open={showApiKeySetup}
+          onOpenChange={setShowApiKeySetup}
+          onApiKeySet={handleApiKeySet}
+        />
 
         {/* Deep Research Dialog */}
         <DeepResearchDialog
