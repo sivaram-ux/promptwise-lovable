@@ -34,7 +34,7 @@ interface OptimizationResult {
 
 export const PromptOptimizer = () => {
   const [prompt, setPrompt] = useState("");
-  const [selectedMode, setSelectedMode] = useState("clarity");
+  const [selectedMode, setSelectedMode] = useState("");
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isExplaining, setIsExplaining] = useState(false);
   const [isDeepResearching, setIsDeepResearching] = useState(false);
@@ -50,6 +50,15 @@ export const PromptOptimizer = () => {
 
   const handleOptimize = async () => {
     if (!prompt.trim()) return;
+    
+    if (!selectedMode.trim()) {
+      toast({
+        title: "Optimization Mode Required",
+        description: "Please select or enter an optimization style first.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Check if API keys are configured
     if (!apiKeysConfigured) {
