@@ -32,15 +32,15 @@ export const PromptInput = ({
       <div className="relative">
         <motion.div
           className={cn(
-            "relative rounded-xl transition-all duration-normal",
+            "relative rounded-2xl transition-all duration-normal border",
             isFocused 
-              ? "ring-2 ring-primary/50 shadow-glow" 
-              : "ring-1 ring-border"
+              ? "border-primary/30 shadow-lg shadow-primary/5" 
+              : "border-border/50"
           )}
           animate={{
-            scale: isFocused ? 1.01 : 1,
+            scale: isFocused ? 1.005 : 1,
           }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.2, type: "spring", damping: 20 }}
         >
           <Textarea
             value={value}
@@ -49,26 +49,27 @@ export const PromptInput = ({
             onBlur={() => setIsFocused(false)}
             placeholder={placeholder}
             className={cn(
-              "min-h-[120px] resize-none border-0 bg-background/50 backdrop-blur-sm",
-              "text-base leading-relaxed p-4 rounded-xl",
-              "placeholder:text-muted-foreground/60",
-              "focus-visible:ring-0 focus-visible:ring-offset-0"
+              "min-h-[120px] resize-none border-0 bg-card/80 backdrop-blur-sm",
+              "text-base leading-relaxed p-6 rounded-2xl",
+              "placeholder:text-muted-foreground/70",
+              "focus-visible:ring-0 focus-visible:ring-offset-0",
+              "transition-colors duration-200"
             )}
           />
           
-          {/* Animated border gradient */}
+          {/* Subtle glow on focus */}
           <motion.div
-            className="absolute inset-0 rounded-xl bg-gradient-primary opacity-0 -z-10"
+            className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 -z-10"
             animate={{
-              opacity: isFocused ? 0.1 : 0,
+              opacity: isFocused ? 1 : 0,
             }}
             transition={{ duration: 0.3 }}
           />
         </motion.div>
 
         {/* Character count */}
-        <div className="absolute bottom-3 right-3 text-xs text-muted-foreground/60">
-          {value.length} characters
+        <div className="absolute bottom-4 right-4 text-xs text-muted-foreground/70 bg-background/80 px-2 py-1 rounded-md">
+          {value.length}
         </div>
       </div>
 
@@ -82,9 +83,9 @@ export const PromptInput = ({
           disabled={!value.trim() || isLoading}
           size="lg"
           className={cn(
-            "bg-gradient-primary hover:bg-gradient-primary text-primary-foreground",
-            "px-8 py-3 rounded-xl font-medium transition-all duration-normal",
-            "shadow-lg hover:shadow-glow disabled:opacity-50 disabled:cursor-not-allowed",
+            "bg-primary hover:bg-primary/90 text-primary-foreground",
+            "px-8 py-3 rounded-xl font-medium transition-all duration-200",
+            "shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed",
             "border-0 relative overflow-hidden"
           )}
         >
@@ -100,12 +101,12 @@ export const PromptInput = ({
             </>
           )}
           
-          {/* Shimmer effect on hover */}
+          {/* Subtle hover effect */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
             initial={{ x: "-100%" }}
             whileHover={{ x: "100%" }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8 }}
           />
         </Button>
       </motion.div>
